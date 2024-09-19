@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Region;
 use App\Filament\Resources\ConferenceResource\Pages;
 use App\Filament\Resources\ConferenceResource\RelationManagers;
 use App\Models\Conference;
+use App\Models\Venue;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -26,22 +28,46 @@ class ConferenceResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label('Conference Name')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('description')
-                    ->required()
-                    ->maxLength(255),
+                    ->maxLength(64),
+                Forms\Components\MarkdownEditor::make('description')
+                    ->required(),
                 Forms\Components\DateTimePicker::make('start_date')
+                    ->native(false)
                     ->required(),
                 Forms\Components\DateTimePicker::make('end_date')
+                    ->native(false)
                     ->required(),
-                Forms\Components\TextInput::make('status')
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'draft' => 'Draft',
+                        'published' => 'Published',
+                        'archived' => 'Archived'
+                    ])
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('region')
-                    ->required()
-                    ->maxLength(255),
+                    ->native(false),
+                Forms\Components\Select::make('region')
+                    ->live()
+                    ->enum(Region::class)
+                    ->options(Region::class)
+                    ->native(false),
                 Forms\Components\Select::make('venue_id')
-                    ->relationship('venue', 'name'),
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm(function (Forms\Get $get) {
+                        return Venue::getForm(
+                            $get('region')
+                        );
+                    })
+                    ->editOptionForm(function (Forms\Get $get) {
+                        return Venue::getForm(
+                            $get('region')
+                        );
+                    })
+                    ->relationship('venue', 'name', modifyQueryUsing: function (Builder $query, Forms\Get $get) {
+                        return $query->where('region', $get('region'));
+                    }),
+                Forms\Components\Checkbox::make('is_published')
+                    ->default(false)
             ]);
     }
 
