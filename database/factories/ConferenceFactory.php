@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Region;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use App\Models\Conference;
@@ -21,14 +22,20 @@ class ConferenceFactory extends Factory
      */
     public function definition(): array
     {
+        $region = $this->faker->randomElement(Region::cases());
         return [
             'name' => $this->faker->name(),
             'description' => $this->faker->text(),
             'start_date' => $this->faker->dateTime(),
             'end_date' => $this->faker->dateTime(),
-            'status' => $this->faker->word(),
-            'region' => $this->faker->word(),
-            'venue_id' => Venue::factory(),
+            'status' => $this->faker->randomElement([
+                'draft',
+                'published',
+                'archived'
+            ]),
+            'is_published' => $this->faker->randomElement([0, 1]),
+            'region' => $region,
+            'venue_id' => Venue::where('region', $region)->inRandomOrder()->first(),
         ];
     }
 }

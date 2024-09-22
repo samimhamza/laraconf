@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Region;
+use Filament\Forms\Components\Actions;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
@@ -108,10 +110,29 @@ class Conference extends Model
                             return $query->where('region', $get('region'));
                         }),
                 ]),
+            // CheckboxList::make('speakers')
+            //     ->relationship('speakers', 'name')
+            //     ->options(Speaker::all()->pluck('name', 'id')),
 
-            CheckboxList::make('speakers')
-                ->relationship('speakers', 'name')
-                ->options(Speaker::all()->pluck('name', 'id')),
+            Actions::make([
+                Action::make('star')
+                    ->label('Fill with Factory Data')
+                    ->icon('heroicon-m-star')
+                    ->action(function ($livewire) {
+                        $data = Conference::factory()->make()->toArray();
+                        $livewire->form->fill($data);
+                    })
+                    ->visible(function (string $operation) {
+                        if ($operation != 'create') {
+                            return false;
+                        }
+                        if (app()->environment('local')) {
+                            return true;
+                        }
+                        return false;
+                    }),
+
+            ]),
         ];
     }
 }
