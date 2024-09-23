@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Filament\Forms;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Venue extends Model
+class Venue extends Model implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
 
     protected $casts = [
         'id' => 'integer',
@@ -47,6 +51,10 @@ class Venue extends Model
                 ->enum(Region::class)
                 ->options(Region::class);
         }
+        $form[] = SpatieMediaLibraryFileUpload::make('images')
+            ->collection('venue-images')
+            ->multiple()
+            ->image();
         return $form;
     }
 }

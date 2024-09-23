@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Speaker extends Model
 {
@@ -34,21 +36,27 @@ class Speaker extends Model
         return $this->belongsToMany(Conference::class);
     }
 
+    public function talks(): HasMany
+    {
+        return $this->hasMany(Talk::class);
+    }
     public static function getForm()
     {
         return [
             Forms\Components\TextInput::make('name')
                 ->required()
                 ->maxLength(255),
+            FileUpload::make('avatar')
+                ->avatar()
+                ->imageEditor()
+                ->maxSize(1024 * 1024 * 4),
             Forms\Components\TextInput::make('email')
                 ->email()
                 ->required()
                 ->maxLength(255),
             Forms\Components\Textarea::make('bio')
-                ->required()
                 ->columnSpanFull(),
             Forms\Components\TextInput::make('twitter_handle')
-                ->required()
                 ->maxLength(255),
             Forms\Components\CheckboxList::make('qualifications')
                 ->options(self::QUALIFICATIONS)

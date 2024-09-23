@@ -33,7 +33,8 @@ class SpeakerResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('qualifications'),
+                Tables\Columns\ImageColumn::make('avatar')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('twitter_handle')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')

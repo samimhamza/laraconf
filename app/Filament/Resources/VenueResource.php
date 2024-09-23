@@ -41,6 +41,10 @@ class VenueResource extends Resource
                 Tables\Columns\TextColumn::make('region')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('images')
+                    ->collection('venue-images')
+                    ->circular()
+                    ->stacked(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

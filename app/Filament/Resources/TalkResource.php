@@ -40,10 +40,19 @@ class TalkResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('speaker.name')
-                    ->numeric()
+                    ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('abstract')
+                    ->wrap()
+                    ->limit(40),
+                Tables\Columns\ImageColumn::make('speaker.avatar'),
+                Tables\Columns\TextColumn::make('speaker.name')
+                    ->label('Speaker Name')
+                    ->searchable()
+                    ->sortable()
+                    ->formatStateUsing(function (Talk $record) {
+                        return $record->speaker->name . ' ' . $record->speaker->email;
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
