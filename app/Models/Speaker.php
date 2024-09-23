@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Speaker extends Model
+class Speaker extends Model implements HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
 
     protected $casts = [
         'id' => 'integer',
@@ -46,10 +50,11 @@ class Speaker extends Model
             Forms\Components\TextInput::make('name')
                 ->required()
                 ->maxLength(255),
-            FileUpload::make('avatar')
+            SpatieMediaLibraryFileUpload::make('avatar')
                 ->avatar()
                 ->imageEditor()
-                ->maxSize(1024 * 1024 * 4),
+                ->maxSize(size: 1024 * 1024 * 4)
+                ->collection('speaker-avatar'),
             Forms\Components\TextInput::make('email')
                 ->email()
                 ->required()
