@@ -40,34 +40,48 @@ class TalkResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->persistFiltersInSession()
+            ->filtersTriggerAction(function ($action) {
+                return $action->button()->label('Filters');
+            })
+            ->persistSearchInSession()
+            ->toggleColumnsTriggerAction(function ($action) {
+                return $action->button()->label('columns');
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable()
-                    ->limit(40),
+                    ->limit(40)
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('abstract')
-                    ->limit(30),
+                    ->limit(30)
+                    ->toggleable(),
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('speaker.avatar')
                     ->collection('speaker-avatar')
                     ->label('Speaker Avatar')
                     ->circular()
                     ->defaultImageUrl(function ($record) {
                         return 'https://ui-avatars.com/api/?background=0D8ABC&color=FFF&name=' . urlencode($record->speaker->name);
-                    }),
+                    })
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('speaker.name')
                     ->label('Speaker Name')
                     ->searchable()
                     ->sortable()
                     ->formatStateUsing(function (Talk $record) {
                         return $record->speaker->name . ' ' . $record->speaker->email;
-                    }),
-                Tables\Columns\ToggleColumn::make('new_talk'),
+                    })
+                    ->toggleable(),
+                Tables\Columns\ToggleColumn::make('new_talk')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->sortable()
                     ->color(function ($state) {
                         return $state->getColor();
-                    }),
+                    })
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('length')
                     ->icon(function ($state) {
                         return match ($state) {
@@ -75,7 +89,7 @@ class TalkResource extends Resource
                             TalkLength::LIGHTENING => 'heroicon-o-bolt',
                             TalkLength::KEYNOTE => 'heroicon-o-key',
                         };
-                    }),
+                    })->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -86,7 +100,19 @@ class TalkResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('new_talk'),
+                Tables\Filters\SelectFilter::make('speaker')
+                    ->relationship('speaker', 'name')
+                    ->searchable()
+                    ->multiple(),
+                Tables\Filters\Filter::make('has_avatar')
+                    ->label('Has Avatar')
+                    ->toggle()
+                    ->query(function ($query) {
+                        return $query->whereHas('speaker', function (Builder $query) {
+                            $query->whereHas('media');
+                        });
+                    })
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
