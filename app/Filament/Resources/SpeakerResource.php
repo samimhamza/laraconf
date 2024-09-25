@@ -66,8 +66,7 @@ class SpeakerResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->slideOver(),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
@@ -130,7 +129,7 @@ class SpeakerResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TalksRelationManager::class,
         ];
     }
 
@@ -138,7 +137,7 @@ class SpeakerResource extends Resource
     {
         return [
             'index' => Pages\ListSpeakers::route('/'),
-            'create' => Pages\CreateSpeaker::route('/create'),
+            // 'create' => Pages\CreateSpeaker::route('/create'),
             // 'edit' => Pages\EditSpeaker::route('/{record}/edit'),
             'view' => Pages\ViewSpeaker::route('/{record}'),
         ];
