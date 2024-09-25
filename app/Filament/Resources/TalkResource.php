@@ -9,6 +9,7 @@ use App\Filament\Resources\TalkResource\RelationManagers;
 use App\Models\Talk;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -115,8 +116,40 @@ class TalkResource extends Resource
                     })
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+                Tables\Actions\EditAction::make()
+                    ->slideOver(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('approve')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->action(function (Talk $record) {
+                            $record->approve();
+                        })
+                        ->after(function () {
+                            Notification::make()->success()->title('This talk was approved')
+                                ->body('The speaker has been notified and the talk has been added to the conference schedule.')
+                                ->send();
+                        })
+                        ->visible(function ($record) {
+                            return $record->status === TalkStatus::SUBMITTED;
+                        }),
+                    Tables\Actions\Action::make(name: 'reject')
+                        ->icon('heroicon-o-no-symbol')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function (Talk $record) {
+                            $record->reject();
+                        })
+                        ->after(function () {
+                            Notification::make()->danger()->title('This talk was reject')
+                                ->body('The speaker has been notified.')
+                                ->send();
+                        })
+                        ->visible(function ($record) {
+                            return $record->status === TalkStatus::SUBMITTED;
+                        }),
+                ]),
+            ],)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -136,7 +169,7 @@ class TalkResource extends Resource
         return [
             'index' => Pages\ListTalks::route('/'),
             'create' => Pages\CreateTalk::route('/create'),
-            'edit' => Pages\EditTalk::route('/{record}/edit'),
+            // 'edit' => Pages\EditTalk::route('/{record}/edit'),
         ];
     }
 }

@@ -47,19 +47,19 @@ class Speaker extends Model implements HasMedia
     public static function getForm()
     {
         return [
-            Forms\Components\TextInput::make('name')
-                ->required()
-                ->maxLength(255),
             SpatieMediaLibraryFileUpload::make('avatar')
                 ->avatar()
                 ->imageEditor()
                 ->maxSize(size: 1024 * 1024 * 4)
                 ->collection('speaker-avatar'),
+            Forms\Components\TextInput::make('name')
+                ->required()
+                ->maxLength(255),
             Forms\Components\TextInput::make('email')
                 ->email()
                 ->required()
                 ->maxLength(255),
-            Forms\Components\Textarea::make('bio')
+            Forms\Components\RichEditor::make('bio')
                 ->columnSpanFull(),
             Forms\Components\TextInput::make('twitter_handle')
                 ->maxLength(255),
