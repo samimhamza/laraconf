@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AttendeeResource\Pages;
 
 use App\Filament\Resources\AttendeeResource;
+use App\Filament\Resources\AttendeeResource\Widgets\AttendeeChartWidget;
 use App\Filament\Resources\AttendeeResource\Widgets\AttendeesStatsWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -15,6 +16,7 @@ class ListAttendees extends ListRecords
     {
         return [
             AttendeesStatsWidget::class,
+            AttendeeChartWidget::class,
         ];
     }
     protected function getHeaderActions(): array
