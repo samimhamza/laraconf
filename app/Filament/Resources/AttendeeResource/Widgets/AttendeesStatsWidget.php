@@ -2,13 +2,24 @@
 
 namespace App\Filament\Resources\AttendeeResource\Widgets;
 
+use App\Filament\Resources\AttendeeResource\Pages\ListAttendees;
 use App\Models\Attendee;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
 use Illuminate\Support\Facades\DB;
 
 class AttendeesStatsWidget extends BaseWidget
 {
+    use InteractsWithPageTable;
+
+    protected function getTablePage(): string
+    {
+        return ListAttendees::class;
+    }
+
     public function getColumns(): int
     {
         return 2;
@@ -16,13 +27,8 @@ class AttendeesStatsWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Attendee Counts', Attendee::count())
-                ->color('success')
-                ->chart(Attendee::selectRaw('DATE(created_at) as date, COUNT(*) as total')
-                    ->groupBy(DB::raw('DATE(created_at)'))
-                    ->pluck('total')
-                    ->toArray()),
-            Stat::make('Total Revenue', Attendee::sum('ticket_cost') / 100),
+            Stat::make('Attendee Counts', $this->getPageTableQuery()->count()),
+            Stat::make('Total Revenue', $this->getPageTableQuery()->sum('ticket_cost') / 100),
         ];
     }
 }

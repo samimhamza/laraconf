@@ -2,34 +2,83 @@
 
 namespace App\Filament\Resources\AttendeeResource\Widgets;
 
+use App\Filament\Resources\AttendeeResource\Pages\ListAttendees;
 use App\Models\Attendee;
 use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Concerns\InteractsWithPageTable;
 use Illuminate\Support\Facades\DB;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
 
 class AttendeeChartWidget extends ChartWidget
 {
+    use InteractsWithPageTable;
     protected static ?string $heading = 'Attendee Signups';
 
-    public function getColumns(): int
+    protected int | string | array $columnSpan = 'full';
+
+    protected static ?string $maxHeight = '200px';
+
+    public ?string $filter = '3months';
+
+    protected static ?string $pollingInterval = '1s';
+
+    protected function getTablePage(): string
     {
-        return 1;
+        return ListAttendees::class;
+    }
+
+    protected function getFilters(): ?array
+    {
+        return [
+            'week' => 'Last Week',
+            'month' => 'Last Month',
+            '3months' => 'Last Three Months',
+        ];
     }
 
     protected function getData(): array
     {
-        $attendees = Attendee::selectRaw('DATE(created_at) as date, COUNT(*) as total')
-            ->groupBy(DB::raw('DATE(created_at)'))
-            ->pluck('total', 'date')
-            ->toArray();
+        // $attendees = Attendee::selectRaw('DATE(created_at) as date, COUNT(*) as total')
+        //     ->groupBy(DB::raw('DATE(created_at)'))
+        //     ->pluck('total', 'date')
+        //     ->toArray();
+
+        $query = $this->getPageTableQuery();
+        $query->getQuery()->orders = [];
+        $filter = $this->filter;
+        match ($filter) {
+            'week' => $data = Trend::query($query)
+                ->between(
+                    start: now()->subWeek(),
+                    end: now(),
+                )
+                ->perDay()
+                ->count(),
+            'month' => $data = Trend::query($query)
+                ->between(
+                    start: now()->subMonth(),
+                    end: now(),
+                )
+                ->perDay()
+                ->count(),
+            '3months' => $data = Trend::query($query)
+                ->between(
+                    start: now()->subMonths(3),
+                    end: now(),
+                )
+                ->perMonth()
+                ->count(),
+        };
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Attendees created',
-                    'data' => array_values($attendees),
+                    'label' => 'Signups',
+                    'data' => $data->map(fn(TrendValue $value) => $value->aggregate),
                 ],
             ],
-            'labels' => array_keys($attendees),
+            'labels' => $data->map(fn(TrendValue $value) => $value->date),
         ];
     }
 
