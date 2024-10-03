@@ -13,13 +13,32 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class AttendeeResource extends Resource
 {
     protected static ?string $model = Attendee::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'First Group';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return 'New';
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'success';
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return [
+            'Conference' => $record->conference->name,
+        ];
+    }
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Form $form): Form
     {
